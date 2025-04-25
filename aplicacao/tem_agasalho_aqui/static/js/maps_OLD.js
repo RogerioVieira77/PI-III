@@ -574,6 +574,7 @@ function displayCollectionPoints(points) {
     
     // Criar marcadores no mapa
     points.forEach(point => {
+        console.log("Adicionando marcador:", point.latitude, point.longitude); // Debug
         const marker = new google.maps.Marker({
             position: { lat: point.latitude, lng: point.longitude },
             map: map,
@@ -604,45 +605,18 @@ function displayCollectionPoints(points) {
     points.forEach(point => {
         html += `
             <div class="collection-point-card">
-                <h3>${point.name}</h3>
-                <p><strong>Endereço:</strong> ${point.address}, ${point.city}, ${point.state}</p>
-                <p><strong>Telefone:</strong> ${point.phone}</p>
-                <p><strong>Horário:</strong> ${point.opening_hours}</p>
+                <h3>${point.name || 'Nome não disponível'}</h3>
+                <p><strong>Endereço:</strong> ${point.address || 'Não disponível'}</p>
+                <p><strong>Telefone:</strong> ${point.phone || 'Não disponível'}</p>
+                <p><strong>Horário:</strong> ${point.opening_hours || 'Não disponível'}</p>
                 ${point.website ? `<p><strong>Website:</strong> <a href="${point.website}" target="_blank">${point.website}</a></p>` : ''}
                 ${point.email ? `<p><strong>Email:</strong> <a href="mailto:${point.email}">${point.email}</a></p>` : ''}
-                <p><strong>Distância:</strong> ${point.distance.toFixed(2)} km</p>
             </div>
         `;
     });
     
     html += '</div>';
     listContainer.innerHTML = html;
-    
-    // Adicionar estilo para os cards
-    const style = document.createElement('style');
-    style.textContent = `
-        .collection-point-card {
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .collection-point-card h3 {
-            margin-top: 0;
-            color: var(--accent-color);
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-        }
-        .collection-point-card p {
-            margin: 8px 0;
-        }
-        .collection-points {
-            margin-bottom: 30px;
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 // Limpa todos os marcadores do mapa

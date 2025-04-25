@@ -3,9 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pontos de Coleta - Agasalho Aqui</title>
+    <title>Área Administrativa - Agasalho Aqui</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 300px;
+            margin: 30px auto;
+        }
+        
+        .admin-button {
+            display: block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-button:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -25,29 +51,12 @@
 
     <main>
         <div class="container">
-            <h1 class="page-title">PONTOS DE COLETA PRÓXIMOS</h1>
+            <h1 class="page-title">PAINEL ADMINISTRATIVO</h1>
             
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Insira sua localização" aria-label="Insira sua localização">
-                <button class="search-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                    </svg>
-                </button>
+            <div class="admin-buttons">
+                <a href="/registroponto" class="admin-button">Cadastrar Ponto</a>
+                <a href="/addadmuser" class="admin-button">Cadastrar Administrador</a>
             </div>
-
-            <!-- Resultados da busca -->
-            <div id="collection-points-list">
-            <!-- A lista de pontos de coleta será carregada aqui via JavaScript -->
-            </div>
-            
-
-            <!-- O mapa será carregado aqui via JavaScript -->
-            <div id="map" class="map-container">
-                
-            </div>
-            
-            
         </div>
     </main>
 
@@ -68,7 +77,5 @@
     </footer>
 
     <script src="/static/js/scripts.js"></script>
-    <script src="/static/js/maps.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDOgHIVDlragPvZ1m4ZrDofF87WkoVBSQ4&callback=initMap" async defer></script>
 </body>
 </html>

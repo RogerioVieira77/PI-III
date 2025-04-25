@@ -397,8 +397,8 @@ footer {
 /* Acessibilidade */
 .accessibility-controls {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  bottom: 10px;
+  left: 10px;
   background-color: var(--white);
   padding: 0.5rem;
   border-radius: 5px;
@@ -437,4 +437,9 @@ footer {
 .high-contrast a,
 .high-contrast button {
   color: yellow !important;
+}
+
+/* Mudança de cor do footer quando o contraste alto está ativado */
+.high-contrast footer {
+  background-color: navy !important;
 }

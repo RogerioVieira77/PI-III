@@ -3,6 +3,7 @@ import mysql.connector
 import os
 import json
 import requests
+import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from dotenv import load_dotenv
@@ -64,87 +65,110 @@ def admin_login():
         return redirect(url_for('admin_dashboard'))
     return render_template('administracao.html')
 
+@app.route('/logado')
+@login_required
+def logado():
+    return render_template('logado.html')
+
 @app.route('/registroponto')
 @login_required
 def registro_ponto():
     return render_template('registroponto.html')
 
+@app.route('/termos')
+def termos():
+    return render_template('termos.html')
+
+@app.route('/privacidade')
+def privacidade():
+    return render_template('privacidade.html')
+
 # API para buscar pontos de coleta por CEP
 @app.route('/api/pontos-coleta', methods=['GET'])
 def api_pontos_coleta():
-    cep = request.args.get('cep', '')
-    
-    if not cep:
-        return jsonify({'error': 'CEP não fornecido'}), 400
-    
-    # Buscar coordenadas do CEP usando API externa (ViaCEP + Nominatim)
     try:
-        # Primeiro, obter o endereço completo do CEP
-        via_cep_url = f'https://viacep.com.br/ws/{cep}/json/'
-        response = requests.get(via_cep_url)
+        cep = request.args.get('cep', '')
+        if not cep:
+            return jsonify({'error': 'CEP não fornecido'}), 400
         
+        # Remover caracteres não numéricos do CEP
+        cep = re.sub(r'\D', '', cep)
+        
+        # Validar CEP
+        if len(cep) != 8:
+            return jsonify({'error': 'Formato de CEP inválido'}), 400
+            
+        # Consultar API externa para obter coordenadas do CEP
+        response = requests.get(f'https://viacep.com.br/ws/{cep}/json/')
         if response.status_code != 200:
-            return jsonify({'error': 'Erro ao consultar o CEP'}), 500
-        
-        cep_data = response.json()
-        
-        if 'erro' in cep_data:
+            return jsonify({'error': 'Erro ao consultar CEP'}), 500
+            
+        address_data = response.json()
+        if 'erro' in address_data:
             return jsonify({'error': 'CEP não encontrado'}), 404
+            
+        # Obter coordenadas usando Google Maps Geocoding API
+        city = address_data.get('localidade', '')
+        state = address_data.get('uf', '')
+        street = address_data.get('logradouro', '')
+        full_address = f'{street}, {city}, {state}, {cep}, Brasil'
         
-        # Montar o endereço completo para buscar as coordenadas
-        endereco = f"{cep_data['logradouro']}, {cep_data['bairro']}, {cep_data['localidade']}, {cep_data['uf']}, Brasil"
+        geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={full_address}&key={app.config['GOOGLE_MAPS_API_KEY']}"
+        geocode_response = requests.get(geocode_url)
+        geocode_data = geocode_response.json()
         
-        # Buscar coordenadas usando Nominatim (OpenStreetMap)
-        nominatim_url = 'https://nominatim.openstreetmap.org/search'
-        params = {
-            'q': endereco,
-            'format': 'json',
-            'limit': 1
-        }
+        if geocode_data['status'] != 'OK':
+            return jsonify({'error': 'Erro ao obter coordenadas para o CEP'}), 500
+            
+        location = geocode_data['results'][0]['geometry']['location']
+        latitude = float(location['lat'])  # Convertendo explicitamente para float
+        longitude = float(location['lng'])  # Convertendo explicitamente para float
         
-        headers = {
-            'User-Agent': 'AgasalhoAqui/1.0'
-        }
-        
-        geo_response = requests.get(nominatim_url, params=params, headers=headers)
-        
-        if geo_response.status_code != 200 or not geo_response.json():
-            return jsonify({'error': 'Não foi possível obter as coordenadas do CEP'}), 500
-        
-        location_data = geo_response.json()[0]
-        latitude = float(location_data['lat'])
-        longitude = float(location_data['lon'])
-        
-        # Buscar pontos de coleta próximos no banco de dados
+        # Consultar pontos de coleta próximos
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Consulta usando a fórmula de Haversine para calcular distância
+        # Buscar pontos em um raio de aproximadamente 5km
         query = """
         SELECT *, 
             (6371 * acos(cos(radians(%s)) * cos(radians(latitude)) * cos(radians(longitude) - radians(%s)) + sin(radians(%s)) * sin(radians(latitude)))) AS distance 
         FROM collection_points 
-        WHERE is_active = TRUE 
+        WHERE is_active = 1
+        HAVING distance < 5 
         ORDER BY distance 
-        LIMIT 5
+        LIMIT 10
         """
         
         cursor.execute(query, (latitude, longitude, latitude))
-        pontos_coleta = cursor.fetchall()
+        points_raw = cursor.fetchall()
+        
+        # Converter valores Decimal para float no JSON
+        points = []
+        for point in points_raw:
+            point_dict = dict(point)
+            # Converter valores Decimal para float
+            point_dict['latitude'] = float(point_dict['latitude'])
+            point_dict['longitude'] = float(point_dict['longitude']) 
+            point_dict['distance'] = float(point_dict['distance'])
+            points.append(point_dict)
         
         cursor.close()
         conn.close()
         
         return jsonify({
-            'cep': cep,
-            'latitude': latitude,
-            'longitude': longitude,
-            'pontos_coleta': pontos_coleta
+            'location': {
+                'latitude': latitude,
+                'longitude': longitude,
+                'address': full_address
+            },
+            'points': points
         })
         
     except Exception as e:
+        # Adicionar log para depuração
+        print(f"Erro na API pontos-coleta: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
+    
 # API para enviar solicitação de cadastro
 @app.route('/api/solicitar-cadastro', methods=['POST'])
 def api_solicitar_cadastro():
@@ -186,6 +210,51 @@ def api_solicitar_cadastro():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/addadmuser')
+@login_required
+def add_admin_user():
+        return render_template('addadmuser.html')
+
+
+@app.route('/api/admin/cadastrar', methods=['POST'])
+@login_required
+def api_admin_cadastrar():
+    try:
+        # Obter dados do formulário
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Validar dados
+        if not name or not email or not password:
+            return jsonify({'error': 'Todos os campos são obrigatórios'}), 400
+            
+        # Verificar se o email já está em uso
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM admin_users WHERE email = %s", (email,))
+        if cursor.fetchone():
+            return jsonify({'error': 'Este email já está em uso'}), 400
+            
+        # Gerar hash da senha
+        password_hash = generate_password_hash(password)
+        
+        # Inserir usuário no banco de dados
+        cursor.execute(
+            "INSERT INTO admin_users (name, email, password) VALUES (%s, %s, %s)",
+            (name, email, password_hash)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Administrador cadastrado com sucesso'})
+        
+    except Exception as e:
+        print(f"Erro ao cadastrar administrador: {str(e)}")
+        return jsonify({'error': 'Erro ao processar cadastro'}), 500
+
 
 # API para autenticação de administradores
 @app.route('/api/admin/login', methods=['POST'])

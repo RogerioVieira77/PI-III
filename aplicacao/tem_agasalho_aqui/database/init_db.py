@@ -26,11 +26,11 @@ def create_database():
         cursor = conn.cursor()
         
         # Criar banco de dados se não existir
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
         print(f"Banco de dados '{db_name}' criado ou já existente.")
         
         # Usar o banco de dados
-        cursor.execute(f"USE {db_name}")
+        cursor.execute(f"USE `{db_name}`")
         
         # Criar tabelas
         create_tables(cursor)
@@ -110,10 +110,29 @@ def create_tables(cursor):
     print("Tabela 'registration_requests' criada ou já existente.")
     
     # Criar índices para otimizar consultas
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_collection_points_postal_code ON collection_points(postal_code)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_collection_points_coordinates ON collection_points(latitude, longitude)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_collection_points_active ON collection_points(is_active)")
+    try:
+        cursor.execute("CREATE INDEX idx_collection_points_postal_code ON collection_points(postal_code)")
+    except mysql.connector.Error as err:
+        if err.errno != 1061:  # Error code for duplicate index
+            raise
+    try:
+        cursor.execute("CREATE INDEX idx_collection_points_coordinates ON collection_points(latitude, longitude)")
+    except mysql.connector.Error as err:
+        if err.errno != 1061:
+            raise
+    try:
+        cursor.execute("CREATE INDEX idx_collection_points_active ON collection_points(is_active)")
+    except mysql.connector.Error as err:
+        if err.errno != 1061:
+            raise
     print("Índices criados ou já existentes.")
+    
+    # Verificar se a coluna is_active existe e criar se necessário
+    cursor.execute("SHOW COLUMNS FROM collection_points LIKE 'is_active'")
+    if cursor.fetchone() is None:
+        cursor.execute("ALTER TABLE collection_points ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Flag que indica se o ponto de coleta está ativo (1) ou inativo (0)'")
+        cursor.execute("UPDATE collection_points SET is_active = 1")
+
 
 def insert_initial_data(cursor):
     """Inserir dados iniciais no banco de dados"""
