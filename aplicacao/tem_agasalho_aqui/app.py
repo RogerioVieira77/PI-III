@@ -62,7 +62,7 @@ def cadastro():
 @app.route('/administracao')
 def admin_login():
     if 'user_id' in session:
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('logado'))
     return render_template('administracao.html')
 
 @app.route('/logado')
@@ -221,13 +221,17 @@ def add_admin_user():
 @login_required
 def api_admin_cadastrar():
     try:
+        print("Recebeu requisição para cadastro de administrador")
         # Obter dados do formulário
         name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         
+        print(f"Dados recebidos: nome={name}, email={email}, senha={'*'*len(password)}")
+        
         # Validar dados
         if not name or not email or not password:
+            print("Dados inválidos: campos obrigatórios faltando")
             return jsonify({'error': 'Todos os campos são obrigatórios'}), 400
             
         # Verificar se o email já está em uso
@@ -235,57 +239,34 @@ def api_admin_cadastrar():
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM admin_users WHERE email = %s", (email,))
         if cursor.fetchone():
+            print(f"Email {email} já está em uso")
+            cursor.close()
+            conn.close()
             return jsonify({'error': 'Este email já está em uso'}), 400
             
         # Gerar hash da senha
         password_hash = generate_password_hash(password)
         
         # Inserir usuário no banco de dados
-        cursor.execute(
-            "INSERT INTO admin_users (name, email, password) VALUES (%s, %s, %s)",
-            (name, email, password_hash)
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
+        try:
+            print("Tentando inserir no banco de dados")
+            cursor.execute(
+                "INSERT INTO admin_users (name, email, password) VALUES (%s, %s, %s)",
+                (name, email, password_hash)
+            )
+            conn.commit()
+            print("Usuário inserido com sucesso!")
+        except Exception as db_error:
+            print(f"Erro ao inserir no banco: {str(db_error)}")
+            raise db_error
+        finally:
+            cursor.close()
+            conn.close()
         
         return jsonify({'success': True, 'message': 'Administrador cadastrado com sucesso'})
         
     except Exception as e:
         print(f"Erro ao cadastrar administrador: {str(e)}")
-        return jsonify({'error': 'Erro ao processar cadastro'}), 500
-
-
-# API para autenticação de administradores
-@app.route('/api/admin/login', methods=['POST'])
-def api_admin_login():
-    try:
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        if not email or not password:
-            return jsonify({'error': 'E-mail e senha são obrigatórios'}), 400
-        
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        
-        query = "SELECT * FROM admin_users WHERE email = %s"
-        cursor.execute(query, (email,))
-        user = cursor.fetchone()
-        
-        cursor.close()
-        conn.close()
-        
-        if not user or not check_password_hash(user['password'], password):
-            return jsonify({'error': 'E-mail ou senha inválidos'}), 401
-        
-        # Armazenar informações do usuário na sessão
-        session['user_id'] = user['id']
-        session['user_name'] = user['name']
-        
-        return jsonify({'success': True, 'redirect': url_for('registro_ponto')})
-        
-    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # API para registrar novo ponto de coleta (área administrativa)
