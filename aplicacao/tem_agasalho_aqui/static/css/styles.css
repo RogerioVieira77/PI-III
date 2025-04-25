@@ -70,6 +70,37 @@ header {
   color: var(--dark-blue);
 }
 
+.logout-button-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px 20px;
+  background-color: #f8f9fa;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+  text-decoration: none;
+  color: white;
+}
+
+.logout-icon {
+  margin-right: 5px;
+}
+
+
 /* Conteúdo principal */
 main {
   flex: 1;
@@ -443,3 +474,106 @@ footer {
 .high-contrast footer {
   background-color: navy !important;
 }
+
+<style>
+.loading-indicator {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 14px;
+    color: #007bff;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -5px;
+    margin-left: -5px;
+}
+
+.col-md-2, .col-md-4, .col-md-8, .col-md-10 {
+    padding-right: 5px;
+    padding-left: 5px;
+    position: relative;
+    width: 100%;
+}
+
+.col-md-2 { flex: 0 0 16.666667%; max-width: 16.666667%; }
+.col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+.col-md-8 { flex: 0 0 66.666667%; max-width: 66.666667%; }
+.col-md-10 { flex: 0 0 83.333333%; max-width: 83.333333%; }
+
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group-append {
+    display: flex;
+    margin-left: -1px;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 0.375rem 0.75rem;
+}
+
+.btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Estilo para o botão Buscar igual ao menu nav */
+.input-group {
+  display: flex;
+  width: 100%;
+}
+
+.input-group-append {
+  margin-left: 0px;
+  margin-top: 15px;
+  
+}
+
+.nav-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.nav-button:hover {
+  background-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.nav-button:active {
+  transform: translateY(0);
+}
+
+/* Ajuste para alinhar verticalmente */
+.input-group .form-control {
+  height: 35px;
+}
+
+</style>

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from datetime import timedelta
 import mysql.connector
 import os
 import json
@@ -22,6 +23,14 @@ app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
 app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', '')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'agasalho_aqui')
 app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY', '')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.config['SESSION_PERMANENT'] = False
+
+
+@app.context_processor
+def inject_user_status():
+    """Injeta variáveis em todos os templates"""
+    return {'is_logged_in': 'user_id' in session}
 
 # Função para conectar ao banco de dados
 def get_db_connection():
@@ -31,6 +40,8 @@ def get_db_connection():
         password=app.config['MYSQL_PASSWORD'],
         database=app.config['MYSQL_DB']
     )
+
+
 
 # Decorator para verificar se o usuário está logado
 def login_required(f):
@@ -176,11 +187,19 @@ def api_solicitar_cadastro():
         data = request.form
         
         nome = data.get('nome')
+        cep = data.get('cep')
         endereco = data.get('endereco')
+        numero = data.get('numero')
+        bairro = data.get('bairro')
+        cidade = data.get('cidade')
+        uf = data.get('uf')
         email = data.get('email')
         telefone = data.get('telefone')
         horario = data.get('horario')
         site = data.get('site', '')
+        
+        # Combinar informações de endereço
+        endereco_completo = f"{endereco}, {numero} - {bairro}, {cidade}/{uf}, CEP {cep}"
         
         # Validar campos obrigatórios
         if not all([nome, endereco, email, telefone, horario]):
@@ -196,20 +215,20 @@ def api_solicitar_cadastro():
         VALUES (%s, %s, %s, %s, %s, %s)
         """
         
-        cursor.execute(query, (nome, endereco, email, telefone, horario, site))
+        cursor.execute(query, (nome, endereco_completo, email, telefone, horario, site))
         conn.commit()
         
         cursor.close()
         conn.close()
         
         # Enviar e-mail de notificação (simulado)
-        # Em uma implementação real, usaríamos uma biblioteca como smtplib
         print(f"E-mail enviado para contatoagasalhoaqui@gmail.com: Nova solicitação de cadastro de {nome}")
         
         return jsonify({'success': True, 'message': 'Solicitação enviada com sucesso'})
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
     
 @app.route('/addadmuser')
 @login_required
@@ -349,6 +368,101 @@ def api_registrar_ponto():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/alteraradm')
+@login_required
+def alterar_admin():
+    return render_template('alteraradm.html')
+
+@app.route('/api/admin/alterar-senha', methods=['POST'])
+@login_required
+def api_admin_alterar_senha():
+    try:
+        print("Recebeu requisição para alteração de senha de administrador")
+        # Obter dados do formulário
+        email = request.form.get('email')
+        new_password = request.form.get('new_password')
+        
+        # Validar dados
+        if not email or not new_password:
+            print("Dados inválidos: campos obrigatórios faltando")
+            return jsonify({'error': 'Todos os campos são obrigatórios'}), 400
+            
+        # Verificar se o email existe no banco
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM admin_users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        
+        if not user:
+            print(f"Email {email} não encontrado")
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Administrador não encontrado com este email'}), 404
+            
+        # Gerar hash da nova senha
+        password_hash = generate_password_hash(new_password)
+        
+        # Atualizar senha no banco de dados
+        try:
+            print(f"Atualizando senha para o usuário com email {email}")
+            cursor.execute(
+                "UPDATE admin_users SET password = %s WHERE email = %s",
+                (password_hash, email)
+            )
+            conn.commit()
+            print("Senha atualizada com sucesso!")
+        except Exception as db_error:
+            print(f"Erro ao atualizar senha no banco: {str(db_error)}")
+            raise db_error
+        finally:
+            cursor.close()
+            conn.close()
+        
+        return jsonify({'success': True, 'message': 'Senha alterada com sucesso'})
+        
+    except Exception as e:
+        print(f"Erro ao alterar senha: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# API para login administrativo
+@app.route('/api/admin/login', methods=['POST'])
+def api_admin_login():
+    try:
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Validar dados
+        if not email or not password:
+            return jsonify({'error': 'Email e senha são obrigatórios'}), 400
+            
+        # Verificar no banco de dados
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM admin_users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        # Verificar se o usuário existe e a senha está correta
+        if user and check_password_hash(user['password'], password):
+            # Criar sessão
+            session.permanent = True  # Marcando a sessão como permanente para usar o PERMANENT_SESSION_LIFETIME
+            session['user_id'] = user['id']
+            session['user_email'] = user['email']
+            session['user_name'] = user['name']
+            
+            return jsonify({
+                'success': True,
+                'redirect': url_for('logado')
+            })
+        else:
+            return jsonify({'error': 'Email ou senha inválidos'}), 401
+            
+    except Exception as e:
+        print(f"Erro de login: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 
 # Rota para logout
 @app.route('/admin/logout')

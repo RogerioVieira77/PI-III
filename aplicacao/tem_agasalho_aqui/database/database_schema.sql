@@ -54,4 +54,4 @@ CREATE INDEX idx_collection_points_active ON collection_points(is_active);
 -- Inserir um usuário administrativo padrão (senha: admin123)
 -- Em produção, esta senha deve ser alterada imediatamente
 INSERT INTO admin_users (email, password, name) 
-VALUES ('contatoagasalhoaqui@gmail.com', '$2b$12$1oE8Cv8Bp.Y3XPgdRUkVvuHLJ/XZVA0t7hkCwqfO9B2VDq/R1U6Ue', 'Administrador');
+VALUES ('contatoagasalhoaqui2@gmail.com', '$2b$12$1oE8Cv8Bp.Y3XPgdRUkVvuHLJ/XZVA0t7hkCwqfO9B2VDq/R1U6Ue', 'Administrador2');
