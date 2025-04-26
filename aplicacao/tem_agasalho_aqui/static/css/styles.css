@@ -29,26 +29,28 @@ body {
 /* Cabeçalho */
 header {
   background-color: var(--primary-color);
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   width: 100%;
 }
 
 .container {
-  width: 90%;
-  max-width: 1200px;
+  width: 85%; /* Reduzido de 90% */
+  max-width: 1100px; /* Reduzido de 1200px */
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 0px;
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 1100px; /* Adicionado um max-width específico para o header */
+  padding: 0 15px; /* Adicionado padding horizontal */
 }
 
 .logo {
-  width: 80px;
-  height: 80px;
+  width: 250px;
+  height: 250px;
 }
 
 .nav-menu {
@@ -60,7 +62,7 @@ header {
   color: var(--white);
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border-radius: 5px;
+  border-radius: 3px;
   background-color: var(--dark-blue);
   transition: all 0.3s ease;
 }
@@ -352,8 +354,8 @@ footer {
 }
 
 .footer-logo {
-  width: 60px;
-  height: 60px;
+  width: 160px;
+  height: 160px;
   margin-bottom: 1rem;
 }
 
@@ -475,7 +477,7 @@ footer {
   background-color: navy !important;
 }
 
-<style>
+
 .loading-indicator {
     display: inline-block;
     margin-left: 10px;
@@ -575,5 +577,3 @@ footer {
 .input-group .form-control {
   height: 35px;
 }
-
-</style>

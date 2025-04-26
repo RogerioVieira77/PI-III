@@ -110,11 +110,14 @@ def send_email(subject, message, to_email):
         email_logger.error(f"Erro ao enviar e-mail: {str(e)}", exc_info=True)
         return False
 
-
+"""Função para Injetar as variáveis em todos os templates"""
 @app.context_processor
 def inject_user_status():
-    """Injeta variáveis em todos os templates"""
     return {'is_logged_in': 'user_id' in session}
+
+@app.context_processor
+def inject_google_maps_api_key():
+    return {'google_maps_api_key': app.config['GOOGLE_MAPS_API_KEY']}
 
 # Função para conectar ao banco de dados
 def get_db_connection():
@@ -124,7 +127,6 @@ def get_db_connection():
         password=app.config['MYSQL_PASSWORD'],
         database=app.config['MYSQL_DB']
     )
-
 
 
 # Decorator para verificar se o usuário está logado
@@ -167,8 +169,8 @@ def logado():
 
 @app.route('/registroponto')
 @login_required
-def registro_ponto():
-    return render_template('registroponto.html')
+def registroponto():
+    return render_template('registroponto.html', google_maps_api_key=app.config['GOOGLE_MAPS_API_KEY'])
 
 @app.route('/termos')
 def termos():
@@ -441,58 +443,34 @@ def api_admin_cadastrar():
 @login_required
 def api_registrar_ponto():
     try:
-        data = request.form
-        
-        nome = data.get('nome')
-        apelido = data.get('apelido')
-        endereco = data.get('endereco')
-        cnpj = data.get('cnpj')
-        telefone = data.get('telefone')
-        site = data.get('site', '')
-        observacoes = data.get('observacoes', '')
+        # Extrair dados do formulário
+        nome = request.form.get('nome')
+        apelido = request.form.get('apelido')
+        cnpj = request.form.get('cnpj')
+        telefone = request.form.get('telefone')
+        email = request.form.get('email')
+        cep = request.form.get('cep')
+        endereco = request.form.get('endereco')
+        cidade = request.form.get('cidade')
+        estado = request.form.get('estado')
+        site = request.form.get('site', '')
+        funcionamento = request.form.get('funcionamento')
+        observacoes = request.form.get('observacoes', '')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
         
         # Validar campos obrigatórios
-        if not all([nome, apelido, endereco, cnpj, telefone]):
+        if not all([nome, apelido, cnpj, telefone, email, cep, endereco, cidade, estado, funcionamento, latitude, longitude]):
             return jsonify({'error': 'Todos os campos obrigatórios devem ser preenchidos'}), 400
         
-        # Obter coordenadas do endereço usando Nominatim
+        # Converter latitude e longitude para float
         try:
-            nominatim_url = 'https://nominatim.openstreetmap.org/search'
-            params = {
-                'q': endereco,
-                'format': 'json',
-                'limit': 1
-            }
+            lat_float = float(latitude)
+            lng_float = float(longitude)
+        except ValueError:
+            return jsonify({'error': 'Coordenadas geográficas inválidas'}), 400
             
-            headers = {
-                'User-Agent': 'AgasalhoAqui/1.0'
-            }
-            
-            geo_response = requests.get(nominatim_url, params=params, headers=headers)
-            
-            if geo_response.status_code != 200 or not geo_response.json():
-                return jsonify({'error': 'Não foi possível obter as coordenadas do endereço'}), 500
-            
-            location_data = geo_response.json()[0]
-            latitude = float(location_data['lat'])
-            longitude = float(location_data['lon'])
-            
-            # Extrair informações de cidade e estado do resultado
-            address_parts = location_data.get('display_name', '').split(', ')
-            city = address_parts[-3] if len(address_parts) >= 3 else ''
-            state = address_parts[-2] if len(address_parts) >= 2 else ''
-            postal_code = ''
-            
-            # Tentar extrair CEP do endereço
-            for part in address_parts:
-                if part.replace('-', '').isdigit() and len(part.replace('-', '')) == 8:
-                    postal_code = part
-                    break
-            
-        except Exception as e:
-            return jsonify({'error': f'Erro ao geocodificar endereço: {str(e)}'}), 500
-        
-        # Inserir ponto de coleta no banco de dados
+        # Inserir no banco de dados
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -503,9 +481,8 @@ def api_registrar_ponto():
         """
         
         cursor.execute(query, (
-            nome, apelido, endereco, postal_code, city, state, latitude, longitude, 
-            cnpj, telefone, 'contato@' + site.replace('https://', '').replace('http://', '') if site else '', 
-            site, 'Segunda a Sexta, 9h às 18h', observacoes
+            nome, apelido, endereco, cep, cidade, estado, lat_float, lng_float, 
+            cnpj, telefone, email, site, funcionamento, observacoes
         ))
         conn.commit()
         
@@ -515,6 +492,7 @@ def api_registrar_ponto():
         return jsonify({'success': True, 'message': 'Ponto de coleta registrado com sucesso'})
         
     except Exception as e:
+        print(f"Erro ao registrar ponto de coleta: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # API para alterar senha de administrador

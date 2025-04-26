@@ -1,3 +1,4 @@
+\registroponto.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,6 +7,54 @@
     <title>Registro de Ponto de Coleta - Agasalho Aqui</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .loading-indicator {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 14px;
+            color: #007bff;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .input-group {
+            display: flex;
+            width: 100%;
+        }
+        .input-group-append {
+            margin-left: 8px;
+        }
+        .coords-display {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .alert {
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -24,59 +73,134 @@
     </header>
 
     {% if is_logged_in %}
-<div class="logout-button-container">
-    <a href="/admin/logout" class="logout-button">
-        <span class="logout-icon">⎋</span> Sair
-    </a>
-</div>
-{% endif %}
+    <div class="logout-button-container">
+        <a href="/admin/logout" class="logout-button">
+            <span class="logout-icon">⎋</span> Sair
+        </a>
+    </div>
+    {% endif %}
 
     <main>
         <div class="container">
             <h1 class="page-title">Registro de Ponto de Coleta</h1>
-            <!--<p class="form-description">Insira as informações do Ponto de Coleta</p> -->
             
             <div class="form-container">
                 <form id="registro-form">
+                    <!-- Dados da instituição -->
                     <div class="form-group">
-                        <label for="nome">Nome* (Razão Social do Parceiro)</label>
+                        <label for="nome">Razão Social*</label>
                         <input type="text" id="nome" name="nome" class="form-control" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="apelido">Apelido* (É o nome que vai aparecer no site)</label>
+                        <label for="apelido">Apelido* (Nome que aparecerá no site)</label>
                         <input type="text" id="apelido" name="apelido" class="form-control" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="endereco">Endereço*</label>
-                        <input type="text" id="endereco" name="endereco" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="cnpj">CNPJ*</label>
-                        <input type="text" id="cnpj" name="cnpj" class="form-control" required>
+                        <input type="text" id="cnpj" name="cnpj" class="form-control" required placeholder="00.000.000/0000-00">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="telefone">Telefone*</label>
-                        <div class="phone-input-container">
-                            <div class="country-flag">
-                                <img src="/static/images/BandeiraBrasil.png" alt="Bandeira do Brasil" width="24" height="16">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone">Telefone*</label>
+                            <div class="phone-input-container">
+                                <input type="tel" id="telefone" name="telefone" class="form-control" required placeholder="(00) 00000-0000">
                             </div>
-                            <input type="tel" id="telefone" name="telefone" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">E-mail*</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
                         </div>
                     </div>
                     
+                    <!-- Endereço -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cep">CEP*</label>
+                            <div class="input-group">
+                                <input type="text" id="cep" name="cep" class="form-control" required placeholder="00000-000">
+                                <div class="input-group-append">
+                                    <button type="button" class="nav-button" id="buscar-cep">Buscar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endereco">Endereço Completo*</label>
+                        <input type="text" id="endereco" name="endereco" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cidade">Cidade*</label>
+                            <input type="text" id="cidade" name="cidade" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="estado">Estado*</label>
+                            <select id="estado" name="estado" class="form-control" required>
+                                <option value="">Selecione...</option>
+                                <option value="AC">Acre</option>
+                                <option value="AL">Alagoas</option>
+                                <option value="AP">Amapá</option>
+                                <option value="AM">Amazonas</option>
+                                <option value="BA">Bahia</option>
+                                <option value="CE">Ceará</option>
+                                <option value="DF">Distrito Federal</option>
+                                <option value="ES">Espírito Santo</option>
+                                <option value="GO">Goiás</option>
+                                <option value="MA">Maranhão</option>
+                                <option value="MT">Mato Grosso</option>
+                                <option value="MS">Mato Grosso do Sul</option>
+                                <option value="MG">Minas Gerais</option>
+                                <option value="PA">Pará</option>
+                                <option value="PB">Paraíba</option>
+                                <option value="PR">Paraná</option>
+                                <option value="PE">Pernambuco</option>
+                                <option value="PI">Piauí</option>
+                                <option value="RJ">Rio de Janeiro</option>
+                                <option value="RN">Rio Grande do Norte</option>
+                                <option value="RS">Rio Grande do Sul</option>
+                                <option value="RO">Rondônia</option>
+                                <option value="RR">Roraima</option>
+                                <option value="SC">Santa Catarina</option>
+                                <option value="SP">São Paulo</option>
+                                <option value="SE">Sergipe</option>
+                                <option value="TO">Tocantins</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos ocultos para latitude e longitude -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="hidden" id="latitude" name="latitude">
+                            <input type="hidden" id="longitude" name="longitude">
+                            <div id="coords-display" class="coords-display"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informações adicionais -->
                     <div class="form-group">
                         <label for="site">Site</label>
                         <input type="url" id="site" name="site" class="form-control" placeholder="https://www.exemplo.com.br">
                     </div>
                     
                     <div class="form-group">
+                        <label for="funcionamento">Horário de Funcionamento*</label>
+                        <input type="text" id="funcionamento" name="funcionamento" class="form-control" required placeholder="Ex: Segunda a Sexta, 9h às 18h">
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="observacoes">Observações</label>
                         <textarea id="observacoes" name="observacoes" class="form-control" rows="4"></textarea>
                     </div>
+                    
+                    <div id="message" class="alert" style="display: none;"></div>
                     
                     <button type="submit" class="submit-button">Registrar</button>
                 </form>
@@ -100,6 +224,308 @@
         </div>
     </footer>
 
-    <script src="/static/js/scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Referências de elementos do formulário
+            const registroForm = document.getElementById('registro-form');
+            const cepInput = document.getElementById('cep');
+            const buscarCepBtn = document.getElementById('buscar-cep');
+            const cnpjInput = document.getElementById('cnpj');
+            const telefoneInput = document.getElementById('telefone');
+            const messageDiv = document.getElementById('message');
+            
+            // Máscara para CNPJ
+            cnpjInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 14) value = value.substring(0, 14);
+                
+                if (value.length > 12) {
+                    value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+                } else if (value.length > 8) {
+                    value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4})$/, '$1.$2.$3/$4');
+                } else if (value.length > 5) {
+                    value = value.replace(/^(\d{2})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+                } else if (value.length > 2) {
+                    value = value.replace(/^(\d{2})(\d{1,3})$/, '$1.$2');
+                }
+                
+                e.target.value = value;
+            });
+            
+            // Máscara para telefone
+            telefoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.substring(0, 11);
+                
+                if (value.length > 10) {
+                    value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+                } else if (value.length > 6) {
+                    value = value.replace(/^(\d{2})(\d{4,5})(\d{0,4})$/, '($1) $2-$3');
+                } else if (value.length > 2) {
+                    value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+                }
+                
+                e.target.value = value;
+            });
+            
+            // Máscara para CEP
+            cepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 8) value = value.substring(0, 8);
+                if (value.length > 5) {
+                    value = value.substring(0, 5) + '-' + value.substring(5);
+                }
+                e.target.value = value;
+            });
+            
+            // Evento para buscar CEP
+            buscarCepBtn.addEventListener('click', buscarCEP);
+            
+            // Buscar CEP quando perder o foco
+            cepInput.addEventListener('blur', function() {
+                if (this.value.replace(/\D/g, '').length === 8) {
+                    buscarCEP();
+                }
+            });
+            
+            // Função para buscar endereço pelo CEP
+            function buscarCEP() {
+                const cep = cepInput.value.replace(/\D/g, '');
+                if (cep.length !== 8) {
+                    showMessage('CEP inválido. Digite um CEP com 8 dígitos.', 'error');
+                    return;
+                }
+                
+                // Indicador de carregamento
+                const loadingIndicator = document.createElement('div');
+                loadingIndicator.className = 'loading-indicator';
+                loadingIndicator.textContent = 'Buscando endereço...';
+                cepInput.parentNode.appendChild(loadingIndicator);
+                
+                // Buscar dados do CEP via ViaCEP
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Erro ao buscar CEP');
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Remover indicador
+                        loadingIndicator.remove();
+                        
+                        if (data.erro) {
+                            showMessage('CEP não encontrado. Verifique o número digitado.', 'error');
+                            return;
+                        }
+                        
+                        // Preencher campos de endereço
+                        document.getElementById('endereco').value = `${data.logradouro}, ${data.bairro}`;
+                        document.getElementById('cidade').value = data.localidade;
+                        document.getElementById('estado').value = data.uf;
+                        
+                        // Agora buscar as coordenadas
+                        buscarCoordenadas(cep, data);
+                    })
+                    .catch(error => {
+                        loadingIndicator.remove();
+                        showMessage('Erro ao buscar CEP. Tente novamente ou preencha manualmente.', 'error');
+                        console.error('Erro:', error);
+                    });
+            }
+            
+            // Função para buscar coordenadas a partir do CEP e dados do endereço
+            function buscarCoordenadas(cep, dadosEndereco) {
+    const endereco = `${dadosEndereco.logradouro}, ${dadosEndereco.bairro}, ${dadosEndereco.localidade}, ${dadosEndereco.uf}, ${cep}, Brasil`;
+    
+    // Indicador de carregamento
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.textContent = 'Buscando coordenadas...';
+    document.getElementById('coords-display').appendChild(loadingIndicator);
+    
+    // Usar nominatim (OpenStreetMap) que não requer chave de API
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}&limit=1`;
+    
+    fetch(url, {
+        headers: {
+            'User-Agent': 'AgasalhoAquiApp/1.0'  // Necessário para o Nominatim
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Erro na geocodificação');
+        return response.json();
+    })
+    .then(data => {
+        loadingIndicator.remove();
+        
+        if (!data || data.length === 0) {
+            throw new Error('Endereço não encontrado');
+        }
+        
+        const result = data[0];
+        const latitude = parseFloat(result.lat);
+        const longitude = parseFloat(result.lon);
+        
+        // Definir valores nos campos ocultos
+        document.getElementById('latitude').value = latitude;
+        document.getElementById('longitude').value = longitude;
+        
+        // Exibir coordenadas para o usuário
+        document.getElementById('coords-display').textContent = 
+            `Coordenadas obtidas: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+    })
+    .catch(error => {
+        loadingIndicator.remove();
+        console.error('Erro ao buscar coordenadas:', error);
+        document.getElementById('coords-display').textContent = 
+            'Não foi possível obter as coordenadas automaticamente';
+    });
+}
+            
+            // Função para validar CNPJ
+            function validarCNPJ(cnpj) {
+                cnpj = cnpj.replace(/[^\d]/g, '');
+                
+                if (cnpj.length !== 14) return false;
+                
+                // Elimina CNPJs inválidos conhecidos
+                if (/^(\d)\1+$/.test(cnpj)) return false;
+                
+                // Valida DVs
+                let tamanho = cnpj.length - 2;
+                let numeros = cnpj.substring(0, tamanho);
+                let digitos = cnpj.substring(tamanho);
+                let soma = 0;
+                let pos = tamanho - 7;
+                
+                for (let i = tamanho; i >= 1; i--) {
+                    soma += numeros.charAt(tamanho - i) * pos--;
+                    if (pos < 2) pos = 9;
+                }
+                
+                let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+                if (resultado != digitos.charAt(0)) return false;
+                
+                tamanho = tamanho + 1;
+                numeros = cnpj.substring(0, tamanho);
+                soma = 0;
+                pos = tamanho - 7;
+                
+                for (let i = tamanho; i >= 1; i--) {
+                    soma += numeros.charAt(tamanho - i) * pos--;
+                    if (pos < 2) pos = 9;
+                }
+                
+                resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+                if (resultado != digitos.charAt(1)) return false;
+                
+                return true;
+            }
+            
+            // Função para mostrar mensagens
+            function showMessage(text, type) {
+                messageDiv.textContent = text;
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert ' + (type === 'error' ? 'alert-error' : 'alert-success');
+                
+                // Rolar para a mensagem
+                messageDiv.scrollIntoView({ behavior: 'smooth' });
+                
+                // Esconder após 5 segundos se for sucesso
+                if (type === 'success') {
+                    setTimeout(() => {
+                        messageDiv.style.display = 'none';
+                    }, 5000);
+                }
+            }
+            
+            // Gerenciamento do envio do formulário
+            registroForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Validar CNPJ
+                const cnpj = cnpjInput.value.replace(/\D/g, '');
+                if (!validarCNPJ(cnpj)) {
+                    showMessage('CNPJ inválido. Por favor, verifique.', 'error');
+                    return;
+                }
+                
+                // Validar outros campos
+                const nome = document.getElementById('nome').value.trim();
+                const apelido = document.getElementById('apelido').value.trim();
+                const telefone = document.getElementById('telefone').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const cep = document.getElementById('cep').value.trim();
+                const endereco = document.getElementById('endereco').value.trim();
+                const cidade = document.getElementById('cidade').value.trim();
+                const estado = document.getElementById('estado').value;
+                const funcionamento = document.getElementById('funcionamento').value.trim();
+                const latitude = document.getElementById('latitude').value;
+                const longitude = document.getElementById('longitude').value;
+                
+                // Verificar campos obrigatórios
+                if (!nome || !apelido || !telefone || !email || !cep || !endereco || !cidade || !estado || !funcionamento) {
+                    showMessage('Por favor, preencha todos os campos obrigatórios.', 'error');
+                    return;
+                }
+                
+                // Verificar coordenadas
+                if (!latitude || !longitude) {
+                    showMessage('As coordenadas não foram obtidas. Clique em "Buscar" para obter as coordenadas do endereço.', 'error');
+                    return;
+                }
+                
+                // Desativar botão durante o envio
+                const submitButton = document.querySelector('.submit-button');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Enviando...';
+                
+                try {
+                    // Preparar dados para envio
+                    const formData = new FormData();
+                    formData.append('nome', nome);
+                    formData.append('apelido', apelido);
+                    formData.append('cnpj', cnpj);
+                    formData.append('telefone', telefone);
+                    formData.append('email', email);
+                    formData.append('cep', cep.replace(/\D/g, ''));
+                    formData.append('endereco', endereco);
+                    formData.append('cidade', cidade);
+                    formData.append('estado', estado);
+                    formData.append('site', document.getElementById('site').value.trim());
+                    formData.append('funcionamento', funcionamento);
+                    formData.append('observacoes', document.getElementById('observacoes').value.trim());
+                    formData.append('latitude', latitude);
+                    formData.append('longitude', longitude);
+                    
+                    // Enviar dados para a API
+                    const response = await fetch('/api/admin/registrar-ponto', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erro ao registrar ponto de coleta');
+                    }
+                    
+                    // Exibir mensagem de sucesso
+                    showMessage('Ponto de coleta registrado com sucesso!', 'success');
+                    
+                    // Limpar formulário
+                    registroForm.reset();
+                    document.getElementById('coords-display').textContent = '';
+                    
+                } catch (error) {
+                    console.error('Erro:', error);
+                    showMessage(error.message || 'Erro ao registrar ponto de coleta. Tente novamente.', 'error');
+                } finally {
+                    // Reativar botão
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Registrar';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
