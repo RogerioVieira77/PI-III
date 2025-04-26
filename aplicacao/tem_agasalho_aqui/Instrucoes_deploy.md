@@ -1,4 +1,4 @@
-## Passo a passo para publicação da Aplicação no em um VPS
+## Passo a passo para publicação da Aplicação em um VPS
 
 ## Como exemplo foi usado um VPS no HOSTINGER.
 
