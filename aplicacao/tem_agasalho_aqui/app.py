@@ -2,12 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from datetime import timedelta
 import mysql.connector
 import os
-import json
 import requests
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from dotenv import load_dotenv
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import smtplib
+import logging
+from logging.handlers import RotatingFileHandler
+import os
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -25,6 +30,85 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'agasalho_aqui')
 app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY', '')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.config['SESSION_PERMANENT'] = False
+app.config['EMAIL_NOTIFICATION'] = os.getenv('EMAIL_NOTIFICATION', 'contato@agasalhoaqui.com.br')
+app.config['EMAIL_SENDER'] = os.getenv('EMAIL_SENDER', 'sistema@agasalhoaqui.com.br')
+app.config['EMAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD', '')
+app.config['EMAIL_SMTP_SERVER'] = os.getenv('EMAIL_SMTP_SERVER', 'smtp.gmail.com')
+app.config['EMAIL_SMTP_PORT'] = os.getenv('EMAIL_SMTP_PORT', '587')
+
+# Configuração de logs
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# Logger para email
+email_logger = logging.getLogger('email_logger')
+email_logger.setLevel(logging.DEBUG)
+
+# Arquivo de log para e-mails
+email_handler = RotatingFileHandler(
+    os.path.join(log_dir, 'email.log'),
+    maxBytes=1024*1024,  # 1MB
+    backupCount=10
+)
+email_handler.setFormatter(logging.Formatter(
+    '%(asctime)s [%(levelname)s] - %(message)s'
+))
+email_logger.addHandler(email_handler)
+
+# Console handler
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+console.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+email_logger.addHandler(console)
+
+#Função de envio de email
+def send_email(subject, message, to_email):
+    """
+    Envia um e-mail usando o servidor SMTP configurado.
+    """
+    # Configurações de e-mail
+    sender_email = app.config['EMAIL_SENDER']
+    password = app.config['EMAIL_PASSWORD']
+    smtp_server = app.config['EMAIL_SMTP_SERVER']
+    smtp_port = int(app.config['EMAIL_SMTP_PORT'])
+    
+    # Validar configurações
+    if not password:
+        email_logger.error("Senha de e-mail não configurada no .env")
+        return False
+        
+    # Criar mensagem
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    
+    # Adicionar corpo da mensagem
+    msg.attach(MIMEText(message, 'html'))
+    
+    try:
+        email_logger.info(f"Iniciando envio de e-mail para {to_email}")
+        email_logger.debug(f"Conectando ao servidor SMTP: {smtp_server}:{smtp_port}")
+        
+        # Conectar ao servidor SMTP
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()  # Criptografar a conexão
+        
+        email_logger.debug(f"Fazendo login no servidor SMTP com usuário {sender_email}")
+        server.login(sender_email, password)
+        
+        # Enviar e-mail
+        text = msg.as_string()
+        email_logger.debug(f"Enviando e-mail de {sender_email} para {to_email}")
+        server.sendmail(sender_email, to_email, text)
+        server.quit()
+        
+        email_logger.info(f"E-mail enviado com sucesso para {to_email}")
+        return True
+    except Exception as e:
+        email_logger.error(f"Erro ao enviar e-mail: {str(e)}", exc_info=True)
+        return False
 
 
 @app.context_processor
@@ -186,6 +270,42 @@ def api_solicitar_cadastro():
     try:
         data = request.form
         
+        # Log para depuração
+        print("Dados recebidos do formulário:")
+        for key, value in data.items():
+            print(f"- {key}: {value}")
+        
+        nome = data.get('nome')
+        cep = data.get('cep')
+        endereco = data.get('endereco')
+        numero = data.get('numero')
+        bairro = data.get('bairro')
+        cidade = data.get('cidade')
+        uf = data.get('uf')
+        email = data.get('email')
+        telefone = data.get('telefone')
+        horario = data.get('horario')
+        site = data.get('site', '')
+        
+        # Log dos campos principais
+        print(f"Campos extraídos: nome='{nome}', endereco='{endereco}', email='{email}', telefone='{telefone}', horario='{horario}'")
+        
+        # Combinar informações de endereço
+        endereco_completo = f"{endereco}, {numero} - {bairro}, {cidade}/{uf}, CEP {cep}"
+        
+        # Verificação individual de campos obrigatórios
+        campos_faltando = []
+        if not nome: campos_faltando.append("nome")
+        if not endereco: campos_faltando.append("endereco")
+        if not email: campos_faltando.append("email")
+        if not telefone: campos_faltando.append("telefone")
+        if not horario: campos_faltando.append("horario")
+        
+        if campos_faltando:
+            print(f"Campos obrigatórios faltando: {', '.join(campos_faltando)}")
+            return jsonify({'error': f'Campos obrigatórios faltando: {", ".join(campos_faltando)}'}), 400
+        
+        # Inserir solicitação no banco de dados        
         nome = data.get('nome')
         cep = data.get('cep')
         endereco = data.get('endereco')
@@ -221,15 +341,43 @@ def api_solicitar_cadastro():
         cursor.close()
         conn.close()
         
-        # Enviar e-mail de notificação (simulado)
-        print(f"E-mail enviado para contatoagasalhoaqui@gmail.com: Nova solicitação de cadastro de {nome}")
+        # Preparar e enviar e-mail de notificação
+        email_destino = app.config['EMAIL_NOTIFICATION']
+        assunto = f"Nova solicitação de cadastro: {nome}"
+        
+        email_logger.info(f"Preparando e-mail para notificação de novo cadastro de {nome}")
+        
+        # Criar conteúdo do e-mail com formatação HTML
+        mensagem = f"""
+        <html>
+        <body>
+            <h2>Nova solicitação de cadastro de ponto de coleta</h2>
+            <p><strong>Nome da instituição:</strong> {nome}</p>
+            <p><strong>Endereço completo:</strong> {endereco_completo}</p>
+            <p><strong>Email:</strong> {email}</p>
+            <p><strong>Telefone:</strong> {telefone}</p>
+            <p><strong>Horário de funcionamento:</strong> {horario}</p>
+            <p><strong>Website:</strong> {site or 'Não informado'}</p>
+            <hr>
+            <p>Este e-mail foi enviado automaticamente pelo sistema Tem Agasalho Aqui.</p>
+        </body>
+        </html>
+        """
+        
+        # Enviar e-mail
+        email_enviado = send_email(assunto, mensagem, email_destino)
+        if not email_enviado:
+            email_logger.warning("Falha ao enviar e-mail de notificação, mas o cadastro foi salvo no banco")
         
         return jsonify({'success': True, 'message': 'Solicitação enviada com sucesso'})
         
     except Exception as e:
+        email_logger.error(f"Erro ao processar solicitação: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
     
-    
+
+#Api para administração de usuários
+
 @app.route('/addadmuser')
 @login_required
 def add_admin_user():
@@ -369,6 +517,7 @@ def api_registrar_ponto():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# API para alterar senha de administrador
 @app.route('/alteraradm')
 @login_required
 def alterar_admin():
@@ -472,3 +621,5 @@ def admin_logout():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+

@@ -1,0 +1,24 @@
+2025-04-26 11:04:38,952 [ERROR] - Erro ao processar solicitação: name 'nome' is not defined
+Traceback (most recent call last):
+  File "c:\PI - III\aplicacao\tem_agasalho_aqui\app.py", line 275, in api_solicitar_cadastro
+    assunto = f"Nova solicitação de cadastro: {nome}"
+                                               ^^^^
+NameError: name 'nome' is not defined. Did you mean: 'None'?
+2025-04-26 11:05:22,814 [ERROR] - Erro ao processar solicitação: name 'nome' is not defined
+Traceback (most recent call last):
+  File "c:\PI - III\aplicacao\tem_agasalho_aqui\app.py", line 275, in api_solicitar_cadastro
+    assunto = f"Nova solicitação de cadastro: {nome}"
+                                               ^^^^
+NameError: name 'nome' is not defined. Did you mean: 'None'?
+2025-04-26 11:06:09,024 [ERROR] - Erro ao processar solicitação: name 'nome' is not defined
+Traceback (most recent call last):
+  File "c:\PI - III\aplicacao\tem_agasalho_aqui\app.py", line 275, in api_solicitar_cadastro
+    assunto = f"Nova solicitação de cadastro: {nome}"
+                                               ^^^^
+NameError: name 'nome' is not defined. Did you mean: 'None'?
+2025-04-26 12:08:54,606 [INFO] - Preparando e-mail para notificação de novo cadastro de Casa Papai Robrú
+2025-04-26 12:08:54,606 [INFO] - Iniciando envio de e-mail para rogeriorochavieira77@gmail.com
+2025-04-26 12:08:54,606 [DEBUG] - Conectando ao servidor SMTP: smtp.gmail.com:587
+2025-04-26 12:08:56,186 [DEBUG] - Fazendo login no servidor SMTP com usuário rogeriorochavieira77@gmail.com
+2025-04-26 12:08:56,757 [DEBUG] - Enviando e-mail de rogeriorochavieira77@gmail.com para rogeriorochavieira77@gmail.com
+2025-04-26 12:08:58,274 [INFO] - E-mail enviado com sucesso para rogeriorochavieira77@gmail.com

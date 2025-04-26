@@ -23,6 +23,9 @@
         </div>
     </header>
 
+    <!-- Verifica se o usuário está logado -->
+{% set is_logged_in = session.get('is_logged_in', False) %}
+
 {% if is_logged_in %}
 <div class="logout-button-container">
     <a href="/admin/logout" class="logout-button">
@@ -67,8 +70,7 @@
                 <button type="button" class="nav-button" id="buscar-cep">Buscar</button>
             </div>
         </div>
-        
-        <!--<small class="form-text text-muted">Digite o CEP</small> -->
+                
     </div>
 </div>
 
@@ -143,7 +145,7 @@
 <!-- Campo de site em sua própria linha -->
 <div class="form-group">
     <label for="site">Site (opcional)</label>
-    <input type="url" id="site" name="site" class="form-control" placeholder="https://www.exemplo.com.br">
+    <input type="url" id="site" name="site" class="form-control" placeholder="https://univesp.br/">
 </div>
 
 <div id="message" class="alert" style="display: none;"></div>
@@ -170,11 +172,26 @@
         </div>
     </footer>
 
-    <script src="/static/js/scripts.js"></script>
+  <!--  <script src="/static/js/scripts.js"></script> -->
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Referências aos elementos do formulário
+            const cadastroForm = document.getElementById('cadastro-form');
+            const messageDiv = document.getElementById('message');
             const cepInput = document.getElementById('cep');
             const buscarCepBtn = document.getElementById('buscar-cep');
+            
+            // SOMENTE limpar formulário na carga inicial
+            if (sessionStorage.getItem('formReloading')) {
+                sessionStorage.removeItem('formReloading');
+                cadastroForm.reset();
+            }
+            
+            // Evento para marcar recarregamento
+            window.addEventListener('beforeunload', function() {
+                sessionStorage.setItem('formReloading', 'true');
+            });
             
             // Máscara para o CEP
             cepInput.addEventListener('input', function(e) {
@@ -188,7 +205,7 @@
             
             // Buscar CEP ao sair do campo
             cepInput.addEventListener('blur', function() {
-                if (this.value.length >= 8) {
+                if (this.value.replace(/\D/g, '').length === 8) {
                     buscarCEP();
                 }
             });
@@ -196,6 +213,7 @@
             // Buscar CEP ao clicar no botão
             buscarCepBtn.addEventListener('click', buscarCEP);
             
+            // Função para buscar CEP
             function buscarCEP() {
                 const cep = cepInput.value.replace(/\D/g, '');
                 if (cep.length !== 8) {
@@ -212,7 +230,7 @@
                 // Desabilitar campos durante a busca
                 setFieldsDisabled(true);
                 
-                // Realizar a consulta na API ViaCEP
+                // Consultar API ViaCEP
                 fetch(`https://viacep.com.br/ws/${cep}/json/`)
                     .then(response => {
                         if (!response.ok) throw new Error('Erro ao buscar CEP');
@@ -232,13 +250,15 @@
                         }
                         
                         // Preencher os campos com os dados retornados
-                        document.getElementById('endereco').value = data.logradouro;
-                        document.getElementById('bairro').value = data.bairro;
-                        document.getElementById('cidade').value = data.localidade;
-                        document.getElementById('uf').value = data.uf;
+                        document.getElementById('endereco').value = data.logradouro || '';
+                        document.getElementById('bairro').value = data.bairro || '';
+                        document.getElementById('cidade').value = data.localidade || '';
+                        document.getElementById('uf').value = data.uf || '';
                         
-                        // Focar no campo número
-                        document.getElementById('numero').focus();
+                        // Focar no campo número se o endereço foi preenchido
+                        if (data.logradouro) {
+                            document.getElementById('numero').focus();
+                        }
                         
                         // Reativar os campos
                         setFieldsDisabled(false);
@@ -261,51 +281,105 @@
                 document.getElementById('cidade').disabled = disabled;
                 document.getElementById('uf').disabled = disabled;
             }
+            
+            // Manipulação do envio do formulário
+            cadastroForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Verificar campos - adicionei console.log para debug
+                const nome = document.getElementById('nome').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const telefone = document.getElementById('telefone').value.trim();
+                const endereco = document.getElementById('endereco').value.trim();
+                const numero = document.getElementById('numero').value.trim();
+                const bairro = document.getElementById('bairro').value.trim();
+                const cidade = document.getElementById('cidade').value.trim();
+                const uf = document.getElementById('uf').value;
+                const horario = document.getElementById('horario').value.trim();
+                
+                console.log('Valores dos campos:');
+                console.log('Nome:', nome);
+                console.log('Email:', email);
+                console.log('Telefone:', telefone);
+                console.log('Endereço:', endereco);
+                console.log('Número:', numero);
+                console.log('Bairro:', bairro);
+                console.log('Cidade:', cidade);
+                console.log('UF:', uf);
+                console.log('Horário:', horario);
+                
+                // Validação
+                const camposFaltando = [];
+                if (!nome) camposFaltando.push('Nome da Instituição');
+                if (!email) camposFaltando.push('E-mail');
+                if (!telefone) camposFaltando.push('Telefone');
+                if (!endereco) camposFaltando.push('Logradouro');
+                if (!numero) camposFaltando.push('Número');
+                if (!bairro) camposFaltando.push('Bairro');
+                if (!cidade) camposFaltando.push('Cidade');
+                if (!uf) camposFaltando.push('UF');
+                if (!horario) camposFaltando.push('Horário de Funcionamento');
+                
+                if (camposFaltando.length > 0) {
+                    showMessage(`Por favor, preencha os campos obrigatórios: ${camposFaltando.join(', ')}`, 'error');
+                    return;
+                }
+                
+                // Desabilitar botão durante o envio
+                const submitButton = document.querySelector('.submit-button');
+                submitButton.disabled = true;
+                submitButton.textContent = 'ENVIANDO...';
+                
+                try {
+                    // Preparar dados do formulário
+                    const formData = new FormData();
+                    formData.append('nome', nome);
+                    formData.append('email', email);
+                    formData.append('telefone', telefone);
+                    formData.append('endereco', endereco);
+                    formData.append('numero', numero);
+                    formData.append('bairro', bairro);
+                    formData.append('cidade', cidade);
+                    formData.append('uf', uf);
+                    formData.append('cep', cepInput.value.trim());
+                    formData.append('horario', horario);
+                    formData.append('site', document.getElementById('site').value.trim());
+                    
+                    // Enviar ao servidor
+                    const response = await fetch('/api/solicitar-cadastro', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Erro ao enviar solicitação');
+                    }
+                    
+                    // Mostrar mensagem de sucesso
+                    showMessage('Solicitação enviada com sucesso! Em breve entraremos em contato.', 'success');
+                    cadastroForm.reset();
+                    
+                } catch (error) {
+                    console.error('Erro:', error);
+                    showMessage(error.message || 'Erro ao processar solicitação. Por favor, tente novamente.', 'error');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'ENVIAR SOLICITAÇÃO';
+                }
+            });
+            
+            // Função para exibir mensagens
+            function showMessage(text, type) {
+                messageDiv.textContent = text;
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert ' + (type === 'error' ? 'alert-error' : 'alert-success');
+                messageDiv.scrollIntoView({ behavior: 'smooth' });
+            }
         });
         </script>
 
-        <script>
-    // Script para limpar o formulário quando a página é carregada ou atualizada
-    document.addEventListener('DOMContentLoaded', function() {
-        // Limpar o formulário ao carregar a página
-        const cadastroForm = document.getElementById('cadastro-form');
-        if (cadastroForm) {
-            cadastroForm.reset();
-        }
-        
-        // Adicionar um evento para limpar o formulário antes de atualizar a página
-        window.addEventListener('beforeunload', function() {
-            if (cadastroForm) {
-                // Armazenar temporariamente que a página está sendo recarregada
-                sessionStorage.setItem('formReloading', 'true');
-                // O navegador limpa automaticamente os campos ao atualizar,
-                // mas podemos garantir isso com:
-                cadastroForm.reset();
-            }
-        });
-        
-        // Verificar se estamos recarregando a página e limpar o formulário novamente
-        if (sessionStorage.getItem('formReloading')) {
-            sessionStorage.removeItem('formReloading');
-            if (cadastroForm) {
-                cadastroForm.reset();
-                
-                // Limpar também campos preenchidos automaticamente pelo navegador
-                setTimeout(function() {
-                    const inputs = cadastroForm.querySelectorAll('input, select, textarea');
-                    inputs.forEach(function(input) {
-                        input.value = '';
-                    });
-                    // Restaurar o select UF para a opção padrão
-                    const ufSelect = document.getElementById('uf');
-                    if (ufSelect) {
-                        ufSelect.value = '';
-                    }
-                }, 100);
-            }
-        }
-    });
-</script>
 
 </body>
 </html>
