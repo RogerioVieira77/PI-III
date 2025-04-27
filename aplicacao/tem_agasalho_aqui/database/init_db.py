@@ -7,14 +7,16 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
 # Carregar variáveis de ambiente
-load_dotenv()
-
 # Configurações do banco de dados
+load_dotenv()
 db_config = {
     'host': os.getenv('MYSQL_HOST', 'localhost'),
-    'user': os.getenv('MYSQL_USER', 'root'),
+    'user': os.getenv('MYSQL_USER', 'agasalho_user'),
     'password': os.getenv('MYSQL_PASSWORD', ''),
 }
+
+if not os.getenv('MYSQL_PASSWORD'):
+    print("AVISO: Senha do banco de dados não configurada no .env!")
 
 # Nome do banco de dados
 db_name = os.getenv('MYSQL_DB', 'agasalho_aqui')
@@ -52,9 +54,25 @@ def create_database():
             print("Conexão com MySQL fechada.")
 
 def create_tables(cursor):
+    # Verificar se existem tabelas
+    cursor.execute("SHOW TABLES")
+    tables = cursor.fetchall()
+    tables_count = len(tables)
+    
+    # Perguntar apenas se estamos em produção e já existem tabelas
+    if os.getenv('ENVIRONMENT') == 'production' and tables_count > 0:
+        confirm = input("ATENÇÃO: Você está em ambiente de produção. "
+                    "Deseja recriar as tabelas? (s/N): ")
+        if confirm.lower() != 's':
+            print("Operação cancelada.")
+            return
+
     """Criar as tabelas do banco de dados"""
+
+    
     
     # Tabela de usuários administrativos
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS admin_users (
     id INT AUTO_INCREMENT PRIMARY KEY,

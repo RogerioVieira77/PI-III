@@ -1,5 +1,9 @@
 # Instruções de Implantação do Website Agasalho Aqui
 
+## Pré-Requisitos ##
+# Prepare seu ambiente de Desenvolvimento
+# Não esqueça de ajustar o PATH e o caminhos dos arquivos no seu Projeto
+
 ## Requisitos do Sistema
 - Python 3.8 ou superior
 - MySQL 5.7 ou superior
@@ -58,9 +62,11 @@
 
 ### 4. Implantação em Produção
 
+### Se preferir use o arquivo: INSTRUCOES_IMPLANTACAO_AMBIENTE_PROD para um passo a passo mais detalhado
+
 #### Opção 1: Usando Gunicorn (recomendado)
 
-1. Instale o Gunicorn (já incluído em requirements.txt):
+1. Instale o Gunicorn (já incluído em requirements.txt)
    ```
    pip install gunicorn
    ```
