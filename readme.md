@@ -27,7 +27,14 @@
 - Python
 - Flask
 - MySQL
-- API ViaCEP e Nominatim para geolocalização
+- API ViaCEP 
+- API Nominatim para geolocalização
+
+## Hospedagem
+- Servidor Virtual Privado (VPS)
+- Rodando Ubuntu 24.04 LTS
+- Hospedado no Hostinger
+- NGINX - HTTP Server
 
 ## Estrutura do Projeto
 

@@ -18,7 +18,7 @@
 
 # Servidor
     - Ubuntu 24.04
-    - NGIX (proxy reverso)
+    - NGIX (Http Server/Proxy Reverso)
     - Hospedado em um VPS na Hostinger
 
 # Funcionalidades
