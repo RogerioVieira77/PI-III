@@ -164,32 +164,33 @@
             
             // Função para exibir os pontos de coleta
             function displayCollectionPoints(pontos) {
-                let html = '';
-                
-                pontos.forEach(ponto => {
-                    const statusBadge = ponto.is_active ? 
-                        '<span class="status-badge status-active">Ativo</span>' : 
-                        '<span class="status-badge status-inactive">Inativo</span>';
-                    
-                    const cardClass = ponto.is_active ? 'collection-point-card' : 'collection-point-card inactive';
-                    
-                    html += `
-                        <div class="${cardClass}">
-                            <h3>${ponto.name} ${statusBadge}</h3>
-                            <p><strong>Nome público:</strong> ${ponto.nickname}</p>
-                            <p><strong>CNPJ:</strong> ${ponto.cnpj}</p>
-                            <p><strong>Endereço:</strong> ${ponto.address}, ${ponto.city}, ${ponto.state}</p>
-                            <p><strong>CEP:</strong> ${ponto.postal_code}</p>
-                            <p><strong>Telefone:</strong> ${ponto.phone}</p>
-                            <p><strong>E-mail:</strong> <a href="mailto:${ponto.email}">${ponto.email}</a></p>
-                            ${ponto.website ? `<p><strong>Website:</strong> <a href="${ponto.website}" target="_blank">${ponto.website}</a></p>` : ''}
-                            <p><strong>Horário:</strong> ${ponto.opening_hours}</p>
-                            ${ponto.observations ? `<p><strong>Observações:</strong> ${ponto.observations}</p>` : ''}
-                        </div>
-                    `;
-                });
-                
-                pointsList.innerHTML = html;
+    let html = '';
+    
+    pontos.forEach(ponto => {
+        const statusBadge = ponto.is_active ? 
+            '<span class="status-badge status-active">Ativo</span>' : 
+            '<span class="status-badge status-inactive">Inativo</span>';
+        
+        const cardClass = ponto.is_active ? 'collection-point-card' : 'collection-point-card inactive';
+        
+        html += `
+            <div class="${cardClass}">
+                <h3>${ponto.name} ${statusBadge}</h3>
+                <p><strong>ID:</strong> ${ponto.id}</p>
+                <p><strong>Nome público:</strong> ${ponto.nickname}</p>
+                <p><strong>CNPJ:</strong> ${ponto.cnpj}</p>
+                <p><strong>Endereço:</strong> ${ponto.address}, ${ponto.city}, ${ponto.state}</p>
+                <p><strong>CEP:</strong> ${ponto.postal_code}</p>
+                <p><strong>Telefone:</strong> ${ponto.phone}</p>
+                <p><strong>E-mail:</strong> <a href="mailto:${ponto.email}">${ponto.email}</a></p>
+                ${ponto.website ? `<p><strong>Website:</strong> <a href="${ponto.website}" target="_blank">${ponto.website}</a></p>` : ''}
+                <p><strong>Horário:</strong> ${ponto.opening_hours}</p>
+                ${ponto.observations ? `<p><strong>Observações:</strong> ${ponto.observations}</p>` : ''}
+            </div>
+        `;
+    });
+    
+    pointsList.innerHTML = html;
             }
         });
     </script>
