@@ -34,10 +34,10 @@ header {
 }
 
 .container {
-  width: 85%; /* Reduzido de 90% */
-  max-width: 1100px; /* Reduzido de 1200px */
+  width: 90%;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 0px;
+  padding: 0 15px;
 }
 
 .header-container {
@@ -122,9 +122,9 @@ main {
 }
 
 .page-title {
-  text-align: center;
+  text-align: left;
   margin-bottom: 2rem;
-  font-size: 2rem;
+  margin-bottom: 1.5rem;
   color: var(--dark-blue);
 }
 
@@ -169,25 +169,32 @@ main {
 }
 
 .objectives-section {
-  margin: 3rem 0;
-  text-align: center;
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.objectives-section .section-title {
+  text-align: left;
+  margin-bottom: 1.5rem;
 }
 
 .objectives-cards {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   gap: 2rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
+  margin: 2rem 0;
 }
 
 .objective-card {
   background-color: var(--white);
   border-radius: 10px;
   padding: 2rem;
-  width: 300px;
+  width: 200px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
 }
 
 .objective-card:hover {
@@ -195,35 +202,60 @@ main {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
+/* Centralizar títulos dentro dos cards */
+.objective-card.connect h3,
+.objective-card.promote h3,
+.objective-card.impact h3,
+.objective-card.connect p,
+.objective-card.promote p,
+.objective-card.impact p {
+  text-align: center !important;
+}
+
 .objective-card.connect {
   background-color: #00bcd4;
   color: var(--white);
+  text-align: center !important;
 }
 
 .objective-card.promote {
   background-color: var(--accent-color);
   color: var(--white);
+  text-align: center !important;
 }
 
 .objective-card.impact {
   background-color: var(--secondary-color);
   color: var(--dark-gray);
+  text-align: center !important;
 }
 
 .donation-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 3rem 0;
+  justify-content: space-evenly;
+  margin: 3rem auto;
+  max-width: 1000px;
+  gap: 3rem;
 }
 
 .donation-image {
   flex: 1;
+  position: relative;
+  padding-right: 5rem; /* Aumentar padding à direita */
+}
+
+/* Classe para a imagem Quero Impactar */
+.impact-image {
+  width: 130%;
+  margin: 0 auto;
+  display: block;
 }
 
 .donation-content {
   flex: 1;
-  padding-left: 2rem;
+  padding: 0 1rem;
+  max-width: 500px; 
 }
 
 /* Formulários */
@@ -321,13 +353,26 @@ main {
 
 /* Página Sobre */
 .about-content {
-  max-width: 800px;
+  max-width: 100%;
+  text-align: left;
   margin: 0 auto;
+  width: 100%;
   line-height: 1.6;
 }
 
+.about-content p {
+  text-align: justify;
+  margin-bottom: 1.5rem;
+}
+
 .partners-section {
-  margin-top: 3rem;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.partners-section h2 {
+  text-align: left;
+  margin-bottom: 1.5rem;
 }
 
 .partner-card {
@@ -338,6 +383,9 @@ main {
   background-color: var(--light-gray);
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  text-align: left;
+  width: 100%;
 }
 
 .partner-logo {
@@ -349,6 +397,10 @@ main {
 
 .partner-info {
   flex: 1;
+}
+
+.partner-info p {
+  text-align: justify;
 }
 
 /* Rodapé */
@@ -416,8 +468,22 @@ footer {
   .hero-image, 
   .donation-image {
     margin-top: 2rem;
+    flex: 1;
+    text-align: center;
+    padding: 0 1rem;
+    max-width: 500px;
   }
   
+  .hero-image img,
+.donation-image img {
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* Mantém proporção da imagem */
+  max-height: 400px; /* Altura máxima para consistência */
+}
+
+
+
   .donation-content {
     padding-left: 0;
     margin-top: 2rem;
