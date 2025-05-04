@@ -554,7 +554,6 @@ def api_admin_alterar_senha():
     
 
 # Relatório de pontos de coleta (área administrativa)
-
 @app.route('/relatorio-pontos')
 @login_required
 def relatorio_pontos():
@@ -593,6 +592,73 @@ def api_admin_pontos_coleta():
         
     except Exception as e:
         print(f"Erro ao obter pontos de coleta: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+# Rota para a página de alteração de ponto de coleta
+@app.route('/alterarponto')
+@login_required
+def alterar_ponto():
+    return render_template('alterarponto.html')
+
+# API para buscar ponto de coleta por ID
+@app.route('/api/admin/ponto/<int:point_id>', methods=['GET'])
+@login_required
+def api_admin_ponto_by_id(point_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Buscar ponto pelo ID
+        cursor.execute("SELECT * FROM collection_points WHERE id = %s", (point_id,))
+        ponto = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if not ponto:
+            return jsonify({'error': 'Ponto de coleta não encontrado'}), 404
+        
+        # Converter valores Decimal para float no JSON
+        if ponto['latitude'] is not None:
+            ponto['latitude'] = float(ponto['latitude'])
+        if ponto['longitude'] is not None:
+            ponto['longitude'] = float(ponto['longitude'])
+        
+        return jsonify({'ponto': ponto})
+        
+    except Exception as e:
+        print(f"Erro ao obter ponto de coleta: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# API para atualizar status do ponto de coleta
+@app.route('/api/admin/atualizar-ponto', methods=['POST'])
+@login_required
+def api_admin_atualizar_ponto():
+    try:
+        point_id = request.form.get('point_id')
+        is_active = request.form.get('is_active')
+        
+        if not point_id or is_active is None:
+            return jsonify({'error': 'Dados incompletos'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Atualizar status do ponto
+        cursor.execute(
+            "UPDATE collection_points SET is_active = %s WHERE id = %s",
+            (is_active, point_id)
+        )
+        
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Ponto de coleta atualizado com sucesso'})
+        
+    except Exception as e:
+        print(f"Erro ao atualizar ponto de coleta: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # API para login administrativo
