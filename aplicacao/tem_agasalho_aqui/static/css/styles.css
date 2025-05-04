@@ -284,7 +284,7 @@ main {
   box-sizing: border-box;
 }
 
-/* Estilo para a imagem do banner */
+/* Estilo para a imagem do banner objetivos */
 .bannerobjetivos-section img.bannerobjetivos-image {
   width: 100%;
   max-width: 1000px;
@@ -294,8 +294,6 @@ main {
   border-radius: 8px;
 /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
 }
-
-
 
 /* Classe para a imagem Quero Impactar */
 .impact-image {
@@ -455,7 +453,52 @@ main {
   text-align: justify;
 }
 
-/* Rodapé */
+/* Ajustes para o rodapé */
+footer {
+  background-color: var(--footer-color);  /* Mantém a cor amarela do footer */
+  padding: 1rem 0;
+  margin-top: auto;
+  width: 100%;          /* Garante que ocupe toda a largura */
+}
+
+.footer-container {
+  display: flex;
+  flex-direction: column;  /* Organiza elementos verticalmente */
+  align-items: center;     /* Centraliza tudo horizontalmente */
+  justify-content: center; /* Centraliza verticalmente */
+  max-width: 1100px;       /* Mantém consistente com o resto do site */
+  margin: 0 auto;          /* Centraliza o container */
+}
+
+/* Wrapper para logo e contato */
+.footer-logo-contact {
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Centraliza os itens dentro */
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+
+.footer-logo {
+  width: 100px;             /* Reduzido de 150px */
+  height: 100px;            /* Reduzido de 150px */
+  margin-right: 1rem;       /* Reduzido de 2rem para aproximar */
+}
+
+.contact-info {
+  text-align: left;
+}
+
+/* Ajustar os links e copyright para ocupar toda a largura e centralizar */
+.footer-links, 
+.copyright {
+  width: 100%;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+
+/* Rodapé Antigo
 footer {
   background-color: var(--footer-color);
   padding: 2rem 0;
@@ -477,7 +520,9 @@ footer {
 
 .contact-info {
   margin-bottom: 1rem;
-}
+}  
+
+
 
 .footer-links {
   margin-top: 1rem;
@@ -498,6 +543,10 @@ footer {
   font-size: 0.8rem;
   color: var(--dark-gray);
 }
+
+
+*/
+
 
 /* Responsividade */
 @media (max-width: 768px) {
