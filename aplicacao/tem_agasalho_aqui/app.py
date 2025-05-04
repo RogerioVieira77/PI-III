@@ -551,6 +551,49 @@ def api_admin_alterar_senha():
     except Exception as e:
         print(f"Erro ao alterar senha: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+
+# Relatório de pontos de coleta (área administrativa)
+
+@app.route('/relatorio-pontos')
+@login_required
+def relatorio_pontos():
+    return render_template('relatorio-pontos.html')
+
+@app.route('/api/admin/pontos-coleta', methods=['GET'])
+@login_required
+def api_admin_pontos_coleta():
+    try:
+        status = request.args.get('status', 'all')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        if status == 'active':
+            query = "SELECT * FROM collection_points WHERE is_active = 1 ORDER BY name"
+        elif status == 'inactive':
+            query = "SELECT * FROM collection_points WHERE is_active = 0 ORDER BY name"
+        else:
+            query = "SELECT * FROM collection_points ORDER BY name"
+        
+        cursor.execute(query)
+        pontos = cursor.fetchall()
+        
+        # Converter valores Decimal para float no JSON
+        for ponto in pontos:
+            if ponto['latitude'] is not None:
+                ponto['latitude'] = float(ponto['latitude'])
+            if ponto['longitude'] is not None:
+                ponto['longitude'] = float(ponto['longitude'])
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'pontos': pontos})
+        
+    except Exception as e:
+        print(f"Erro ao obter pontos de coleta: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 # API para login administrativo
 @app.route('/api/admin/login', methods=['POST'])

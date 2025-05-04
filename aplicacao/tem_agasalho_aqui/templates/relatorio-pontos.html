@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Pontos de Coleta - Agasalho Aqui</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .filter-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .filter-select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--gray);
+        }
+        .collection-point-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .collection-point-card h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .collection-point-card p {
+            margin: 8px 0;
+        }
+        .collection-point-card.inactive {
+            background-color: #f8f8f8;
+            border-left: 4px solid #ff6b6b;
+            opacity: 0.8;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="/">
+                <img src="/static/images/logotipo.png" alt="Logo Agasalho Aqui" class="logo">
+            </a>
+            <nav class="nav-menu">
+                <a href="/">Home</a>
+                <a href="/sobre">Sobre</a>
+                <a href="/pontosdecoleta">Pontos de Coleta</a>
+                <a href="/cadastro">Cadastro</a>
+                <a href="/administracao">Administração</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="page-title">RELATÓRIO DE PONTOS DE COLETA</h1>
+            
+            <div class="filter-container">
+                <span class="filter-label">Filtrar por status:</span>
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">Todos</option>
+                    <option value="active">Pontos Ativos</option>
+                    <option value="inactive">Pontos Inativos</option>
+                </select>
+            </div>
+
+            <div id="loading-indicator" class="loading-indicator">Carregando pontos de coleta...</div>
+            
+            <!-- Resultados do relatório -->
+            <div id="collection-points-list">
+                <!-- Os pontos de coleta serão carregados aqui via JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-logo-contact">
+                <img src="/static/images/HeartBoxlogo.png" alt="Logo Agasalho Aqui" class="footer-logo">
+                <div class="contact-info">
+                    <h3>Fale conosco</h3>
+                    <p><a href="mailto:agasalhoaqui@gmail.com">agasalhoaqui@gmail.com</a></p>
+                    <p>(11) 4002-0922</p>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a href="/termos">Termos e Condições</a> | 
+                <a href="/privacidade">Políticas de Privacidade</a>
+            </div>
+            <p class="copyright">© Tem Agasalho Aqui LTDA - Todos os direitos reservados</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const pointsList = document.getElementById('collection-points-list');
+            
+            // Carregar pontos inicialmente
+            loadCollectionPoints('all');
+            
+            // Adicionar evento para o filtro
+            statusFilter.addEventListener('change', function() {
+                loadCollectionPoints(this.value);
+            });
+            
+            // Função para carregar pontos de coleta
+            function loadCollectionPoints(status) {
+                loadingIndicator.style.display = 'block';
+                pointsList.innerHTML = '';
+                
+                fetch(`/api/admin/pontos-coleta?status=${status}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro ao carregar pontos de coleta');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        loadingIndicator.style.display = 'none';
+                        
+                        if (!data.pontos || data.pontos.length === 0) {
+                            pointsList.innerHTML = '<p>Nenhum ponto de coleta encontrado com este filtro.</p>';
+                            return;
+                        }
+                        
+                        // Exibir os pontos de coleta
+                        displayCollectionPoints(data.pontos);
+                    })
+                    .catch(error => {
+                        loadingIndicator.style.display = 'none';
+                        pointsList.innerHTML = `<p class="error-message">Erro: ${error.message}</p>`;
+                        console.error(error);
+                    });
+            }
+            
+            // Função para exibir os pontos de coleta
+            function displayCollectionPoints(pontos) {
+                let html = '';
+                
+                pontos.forEach(ponto => {
+                    const statusBadge = ponto.is_active ? 
+                        '<span class="status-badge status-active">Ativo</span>' : 
+                        '<span class="status-badge status-inactive">Inativo</span>';
+                    
+                    const cardClass = ponto.is_active ? 'collection-point-card' : 'collection-point-card inactive';
+                    
+                    html += `
+                        <div class="${cardClass}">
+                            <h3>${ponto.name} ${statusBadge}</h3>
+                            <p><strong>Nome público:</strong> ${ponto.nickname}</p>
+                            <p><strong>CNPJ:</strong> ${ponto.cnpj}</p>
+                            <p><strong>Endereço:</strong> ${ponto.address}, ${ponto.city}, ${ponto.state}</p>
+                            <p><strong>CEP:</strong> ${ponto.postal_code}</p>
+                            <p><strong>Telefone:</strong> ${ponto.phone}</p>
+                            <p><strong>E-mail:</strong> <a href="mailto:${ponto.email}">${ponto.email}</a></p>
+                            ${ponto.website ? `<p><strong>Website:</strong> <a href="${ponto.website}" target="_blank">${ponto.website}</a></p>` : ''}
+                            <p><strong>Horário:</strong> ${ponto.opening_hours}</p>
+                            ${ponto.observations ? `<p><strong>Observações:</strong> ${ponto.observations}</p>` : ''}
+                        </div>
+                    `;
+                });
+                
+                pointsList.innerHTML = html;
+            }
+        });
+    </script>
+</body>
+</html>
