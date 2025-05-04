@@ -1,0 +1,16 @@
+# No servidor de produção
+cd /var/www/agasalho_aqui
+
+# Faça um backup da versão atual
+sudo cp -r aplicacao aplicacao_backup_$(date +"%Y%m%d_%H%M%S")
+
+# Crie um branch temporário para reversão emergencial
+git checkout -b pre-update-backup
+
+# Atualize o código da versão principal
+git checkout main
+git pull origin main
+
+# Reinicie os serviços
+sudo supervisorctl restart agasalho_aqui
+sudo systemctl reload nginx
