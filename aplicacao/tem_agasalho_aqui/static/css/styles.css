@@ -295,6 +295,15 @@ main {
 /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
 }
 
+/*Pagina Sobre */
+/* Centralizar conteúdo da seção Sobre Nós */
+.about-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+}
+
+
 /* Classe para a imagem Quero Impactar */
 .impact-image {
   width: 130%;
