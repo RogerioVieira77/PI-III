@@ -245,6 +245,58 @@ main {
   padding-right: 5rem; /* Aumentar padding à direita */
 }
 
+/* Estilo para a seção do banner central */
+.banner-section {
+  margin: 3rem auto;  /* Mesmas margens que donation-section */
+  max-width: 1000px;  /* Mesma largura máxima que donation-section */
+  text-align: center;
+}
+
+/* Estilo para o container da imagem */
+.banner-section .banner-image {
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Estilo para a imagem do banner */
+.banner-section img.banner-image {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+/*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
+}
+
+/* Estilo para a seção do Banner Objetivos */
+.bannerobjetivos-section {
+  margin: 3rem auto;  /* Mesmas margens que donation-section */
+  max-width: 1000px;  /* Mesma largura máxima que donation-section */
+  text-align: center;
+}
+
+/* Estilo para o container do banner objetivos */
+.bannerobjetivos-section .bannerobjetivos-image {
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Estilo para a imagem do banner */
+.bannerobjetivos-section img.bannerobjetivos-image {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+/*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
+}
+
+
+
 /* Classe para a imagem Quero Impactar */
 .impact-image {
   width: 130%;
@@ -553,6 +605,11 @@ footer {
 /* Mudança de cor do footer quando o contraste alto está ativado */
 .high-contrast footer {
   background-color: navy !important;
+}
+
+.high-contrast .partner-card {
+  background-color: navy !important;
+  border: 1px solid #ffffff !important;
 }
 
 

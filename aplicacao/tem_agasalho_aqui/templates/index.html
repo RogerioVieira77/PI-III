@@ -23,14 +23,6 @@
         </div>
     </header>
 
-{% if is_logged_in %}
-<div class="logout-button-container">
-    <a href="/admin/logout" class="logout-button">
-        <span class="logout-icon">⎋</span> Sair
-    </a>
-</div>
-{% endif %}
-
     <main>
         <section class="hero-section container">
             <div class="hero-content">
@@ -42,6 +34,16 @@
                 <img src="/static/images/Quero Ajudar.png" alt="Pessoa doando roupas">
             </div>
         </section>
+
+
+        <!-- Banner Central -->
+        <section class="banner-section container">
+            <div class="banner-image">
+                <img src="/static/images/Como sua doação chega.png" alt="Como sua doação chega a quem precisa" class="banner-image">
+            </div>
+        </section>
+
+
 
        <!-- <section class="objectives-section container">
             <h2 class="section-title">NOSSOS OBJETIVOS</h2>
