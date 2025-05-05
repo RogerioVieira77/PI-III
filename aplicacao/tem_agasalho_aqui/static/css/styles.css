@@ -298,7 +298,7 @@ main {
 /*Pagina Sobre */
 /* Centralizar conteúdo da seção Sobre Nós */
 .about-content {
-  text-align: center;
+  text-align: center; !important
   max-width: 800px;
   margin: 0 auto 2rem auto;
 }
