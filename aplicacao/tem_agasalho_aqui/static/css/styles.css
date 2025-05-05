@@ -420,8 +420,10 @@ main {
 }
 
 .about-content p {
-  text-align: justify;
-  margin-bottom: 1.5rem;
+  text-align:center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
 .partners-section {
