@@ -29,6 +29,7 @@
 - MySQL
 - API ViaCEP 
 - API Nominatim para geolocalização
+- API Google Maps
 
 ## Hospedagem
 - Servidor Virtual Privado (VPS)
