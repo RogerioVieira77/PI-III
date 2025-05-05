@@ -672,6 +672,27 @@ footer {
   border: 1px solid #ffffff !important;
 }
 
+/* Ajuste de alto contraste para os cards de objetivos */
+.high-contrast .objective-card {
+  background-color: navy !important;
+  color: white !important;
+  border: 1px solid #ffffff !important;
+}
+
+/* Garantir que os títulos dentro dos cards também fiquem brancos */
+.high-contrast .objective-card h3,
+.high-contrast .objective-card p {
+  color: white !important;
+}
+
+/* Remover as cores específicas de cada card quando em alto contraste */
+.high-contrast .objective-card.connect,
+.high-contrast .objective-card.promote,
+.high-contrast .objective-card.impact {
+  background-color: navy !important;
+  color: white !important;
+}
+
 
 .loading-indicator {
     display: inline-block;

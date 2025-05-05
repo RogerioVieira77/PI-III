@@ -20,7 +20,7 @@
                 <a href="/sobre">Sobre</a>
                 <a href="/pontosdecoleta">Pontos de Coleta</a>
                 <a href="/cadastro">Cadastro</a>
-                <a href="/addadmuser">Adicionar Adm</a>                
+                <a href="/administracao">Administração</a>                
             </nav>
         </div>
     </header>
@@ -73,9 +73,7 @@
         </div>
     </footer>
 
-    <!--<script src="/static/js/scripts.js"></script> -->
-
-
+    <!--<script src="/static/js/scripts.js"></script>-->
     <script>
         // Script para gerenciar o login de administrador
         document.addEventListener('DOMContentLoaded', function() {
@@ -124,8 +122,13 @@
                     }
                 });
             }
-        });
-    </script>
+
+        // Inicializar recursos de acessibilidade
+            if (typeof initAccessibility === 'function') {
+                initAccessibility();
+    }
+});
+</script>
 
 </body>
 </html>

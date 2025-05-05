@@ -166,8 +166,8 @@
         </div>
     </footer>
 
-  <!--  <script src="/static/js/scripts.js"></script> -->
-    
+  
+    <script src="/static/js/scripts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Referências aos elementos do formulário
@@ -371,7 +371,12 @@
                 messageDiv.className = 'alert ' + (type === 'error' ? 'alert-error' : 'alert-success');
                 messageDiv.scrollIntoView({ behavior: 'smooth' });
             }
-        });
+
+            // Inicializar recursos de acessibilidade
+    if (typeof initAccessibility === 'function') {
+        initAccessibility();
+    }  
+});
         </script>
 
 
