@@ -180,6 +180,7 @@ def termos():
 def privacidade():
     return render_template('privacidade.html')
 
+
 # API para buscar pontos de coleta por CEP
 @app.route('/api/pontos-coleta', methods=['GET'])
 def api_pontos_coleta():
@@ -193,16 +194,16 @@ def api_pontos_coleta():
         
         # Validar CEP
         if len(cep) != 8:
-            return jsonify({'error': 'Formato de CEP inválido'}), 400
+            return jsonify({'error': 'O CEP informado está incorreto ou não existe na base do Google Maps'}), 400
             
         # Consultar API externa para obter coordenadas do CEP
         response = requests.get(f'https://viacep.com.br/ws/{cep}/json/')
         if response.status_code != 200:
-            return jsonify({'error': 'Erro ao consultar CEP'}), 500
+            return jsonify({'error': 'O CEP informado está incorreto ou não existe na base do Google Maps'}), 400
             
         address_data = response.json()
         if 'erro' in address_data:
-            return jsonify({'error': 'CEP não encontrado'}), 404
+            return jsonify({'error': 'O CEP informado está incorreto ou não existe na base do Google Maps'}), 404
             
         # Obter coordenadas usando Google Maps Geocoding API
         city = address_data.get('localidade', '')
